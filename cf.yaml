@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Global setup
+Resources:
+  Aries:
+    Type: AWS::IAM::User
+    Properties:
+      Groups:
+        - !Ref DevelopersGroup
+  DevelopersGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      ManagedPolicyArns:
+        - !Ref DevelopersGroupPolicy
+  DevelopersGroupPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - 'sts:AssumeRole'
+          Resource: '*'
+  Pipe:
+    Type: AWS::IAM::User
+    Properties:
+      Groups:
+        - !Ref BuildServersGroup
+  BuildServersGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      ManagedPolicyArns:
+        - !Ref BuildServersGroupPolicy
+  BuildServersGroupPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - 's3:*'
+          Resource: !Sub 'arn:aws:s3:::${ArtifactsBucket}/*'
+        - Effect: Allow
+          Action:
+          - 'sts:AssumeRole'
+          - 'ecr:GetAuthorizationToken'
+          - 'cloudformation:ListStackResources'
+          - 'cloudformation:DescribeStacks'
+          Resource: '*'
+  ArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      LifecycleConfiguration:
+        Rules:
+          - ExpirationInDays: 30
+            Status: Enabled
+            Transitions:
+              - TransitionInDays: 7
+                StorageClass: Glacier
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+Outputs:
+  ArtifactsBucketName:
+    Value: !Ref ArtifactsBucket
+    Export:
+      Name: ArtifactsBucketName
