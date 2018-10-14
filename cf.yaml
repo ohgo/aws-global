@@ -10,17 +10,7 @@ Resources:
     Type: AWS::IAM::Group
     Properties:
       ManagedPolicyArns:
-        - !Ref DevelopersGroupPolicy
-  DevelopersGroupPolicy:
-    Type: AWS::IAM::ManagedPolicy
-    Properties:
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-        - Effect: Allow
-          Action:
-          - 'sts:AssumeRole'
-          Resource: '*'
+        - arn:aws:iam::aws:policy/AdministratorAccess
   Pipe:
     Type: AWS::IAM::User
     Properties:
